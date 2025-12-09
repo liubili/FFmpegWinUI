@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FFmpegWinUI.Page.FilesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:viewmodels="using:FFmpegWinUI.ViewModels"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=viewmodels:FilesPageViewModel}"
+    mc:Ignorable="d"
+    AllowDrop="True">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,16">
+            <TextBlock Text="准备文件" Style="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="添加要处理的媒体文件"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+
+        <!-- 文件列表 - 单列显示 -->
+        <Grid Grid.Row="1"
+              AllowDrop="True"
+              DragOver="Grid_DragOver"
+              Drop="Grid_Drop">
+            <ListView x:Name="FileListView"
+                      SelectionMode="Extended"
+                      AllowDrop="True"
+                      ItemsSource="{x:Bind ViewModel.Files, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedFile, Mode=TwoWay}">
+
+                <!-- 单列数据模板 -->
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:FileItem">
+                        <Grid Padding="8,4">
+                            <TextBlock Text="{x:Bind FilePath}"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTipService.ToolTip="{x:Bind FilePath}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!-- 拖放提示 -->
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="12"
+                        x:Name="DropHintPanel"
+                        Visibility="{x:Bind ViewModel.ShowDropHint, Mode=OneWay}">
+                <FontIcon Glyph="&#xE8E5;" FontSize="48" Opacity="0.5"/>
+                <TextBlock Text="拖放文件到此处"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Opacity="0.5"/>
+                <TextBlock Text="支持视频、音频、图片等媒体文件"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- 控制按钮栏（5个按钮）-->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,16,0,0">
+            <Button Content="加入编码队列"
+                    Command="{x:Bind ViewModel.AddToQueueCommand}"
+                    Style="{StaticResource AccentButtonStyle}"/>
+            <Button Content="添加文件"
+                    Command="{x:Bind ViewModel.AddFileCommand}"/>
+            <Button Content="添加文件夹及其子目录"
+                    Command="{x:Bind ViewModel.AddFolderCommand}"/>
+            <Button Content="移除"
+                    Command="{x:Bind ViewModel.RemoveSelectedFileCommand}"/>
+            <Button Content="全部移除"
+                    Command="{x:Bind ViewModel.ClearFilesCommand}"/>
+        </StackPanel>
+    </Grid>
+</Page>

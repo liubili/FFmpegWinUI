@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="FFmpegWinUI.Page.InterpolationWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="帧插值设置"
+    PrimaryButtonText="确定"
+    SecondaryButtonText="取消"
+    DefaultButton="Primary"
+    PrimaryButtonClick="OkButton_Click"
+    SecondaryButtonClick="CancelButton_Click">
+
+    <ScrollViewer MaxHeight="600" Padding="24">
+        <StackPanel Spacing="16">
+            <!-- 标题和说明 -->
+            <TextBlock Text="使用运动补偿插值算法生成中间帧，提升视频帧率"
+                       TextWrapping="Wrap"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+            <!-- 目标帧率 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="目标帧率 (FPS)" FontWeight="SemiBold"/>
+                <ComboBox x:Name="TargetFPSComboBox"
+                          MinWidth="200"
+                          IsEditable="True"
+                          PlaceholderText="输入目标帧率">
+                    <x:String>24</x:String>
+                    <x:String>30</x:String>
+                    <x:String>48</x:String>
+                    <x:String>60</x:String>
+                    <x:String>120</x:String>
+                    <x:String>144</x:String>
+                </ComboBox>
+                <TextBlock Text="建议设置为原视频帧率的整数倍，例如 24→48/60, 30→60/120"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- 插值模式 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="插值模式" FontWeight="SemiBold"/>
+                <ComboBox x:Name="InterpolationModeComboBox" MinWidth="200">
+                    <ComboBoxItem Content="双向 (mci)" IsSelected="True"/>
+                    <ComboBoxItem Content="双边 (mcb)"/>
+                    <ComboBoxItem Content="混合 (blend)"/>
+                    <ComboBoxItem Content="重复 (dup)"/>
+                </ComboBox>
+                <TextBlock FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap">
+                    <Run Text="• mci: 运动补偿插值（推荐）"/><LineBreak/>
+                    <Run Text="• mcb: 双边运动补偿"/><LineBreak/>
+                    <Run Text="• blend: 简单混合（速度快）"/><LineBreak/>
+                    <Run Text="• dup: 重复帧（不推荐）"/>
+                </TextBlock>
+            </StackPanel>
+
+            <!-- 运动估计模式 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="运动估计模式" FontWeight="SemiBold"/>
+                <ComboBox x:Name="MotionEstimationModeComboBox" MinWidth="200">
+                    <ComboBoxItem Content="双边 (bidir)" IsSelected="True"/>
+                    <ComboBoxItem Content="双向 (bilat)"/>
+                </ComboBox>
+                <TextBlock Text="bidir: 双边运动估计（准确）, bilat: 双向估计（快速）"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- 运动估计算法 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="运动估计算法" FontWeight="SemiBold"/>
+                <ComboBox x:Name="MotionEstimationAlgorithmComboBox" MinWidth="200">
+                    <ComboBoxItem Content="EPZS (推荐)" IsSelected="True"/>
+                    <ComboBoxItem Content="ESA (慢速)"/>
+                    <ComboBoxItem Content="FSS (快速)"/>
+                    <ComboBoxItem Content="NTSS"/>
+                    <ComboBoxItem Content="TDLS"/>
+                    <ComboBoxItem Content="TSS"/>
+                    <ComboBoxItem Content="UMH"/>
+                </ComboBox>
+                <TextBlock Text="EPZS: 增强预测区域搜索（质量与速度平衡）"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- 运动补偿模式 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="运动补偿模式" FontWeight="SemiBold"/>
+                <ComboBox x:Name="MotionCompensationModeComboBox" MinWidth="200">
+                    <ComboBoxItem Content="OBMC (推荐)" IsSelected="True"/>
+                    <ComboBoxItem Content="AOBMC"/>
+                </ComboBox>
+                <TextBlock Text="OBMC: 重叠块运动补偿（质量更好）"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- 可变块大小运动补偿 -->
+            <StackPanel Spacing="8">
+                <CheckBox x:Name="VariableBlockSizeCheckBox"
+                          Content="启用可变块大小运动补偿 (VSBMC)"
+                          IsChecked="False"/>
+                <TextBlock Text="提高质量但会显著降低速度"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Margin="32,0,0,0"/>
+            </StackPanel>
+
+            <!-- 块大小 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="块大小" FontWeight="SemiBold"/>
+                <ComboBox x:Name="BlockSizeComboBox" MinWidth="200">
+                    <ComboBoxItem Content="4"/>
+                    <ComboBoxItem Content="8"/>
+                    <ComboBoxItem Content="16" IsSelected="True"/>
+                    <ComboBoxItem Content="32"/>
+                </ComboBox>
+                <TextBlock Text="较小的块大小提供更精细的运动估计，但速度较慢"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- 搜索范围 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="搜索范围" FontWeight="SemiBold"/>
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider x:Name="SearchRangeSlider"
+                            Grid.Column="0"
+                            Minimum="4"
+                            Maximum="64"
+                            Value="16"
+                            StepFrequency="4"
+                            TickFrequency="8"
+                            TickPlacement="BottomRight"
+                            ValueChanged="SearchRangeSlider_ValueChanged"/>
+                    <TextBlock x:Name="SearchRangeValueText"
+                               Grid.Column="1"
+                               Text="16"
+                               VerticalAlignment="Center"
+                               Width="40"
+                               TextAlignment="Right"/>
+                </Grid>
+                <TextBlock Text="较大的搜索范围可以捕捉更大的运动，但会降低速度"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- 场景切换阈值 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="场景切换检测阈值" FontWeight="SemiBold"/>
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider x:Name="SceneChangeSlider"
+                            Grid.Column="0"
+                            Minimum="0"
+                            Maximum="100"
+                            Value="10"
+                            StepFrequency="1"
+                            TickFrequency="10"
+                            TickPlacement="BottomRight"
+                            ValueChanged="SceneChangeSlider_ValueChanged"/>
+                    <TextBlock x:Name="SceneChangeValueText"
+                               Grid.Column="1"
+                               Text="10"
+                               VerticalAlignment="Center"
+                               Width="40"
+                               TextAlignment="Right"/>
+                </Grid>
+                <TextBlock Text="场景切换时不进行插帧。较低的值更敏感（推荐: 10-15）"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- 预设配置 -->
+            <Expander Header="快速预设" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="8" Padding="12">
+                    <Button Content="平衡模式 (推荐)"
+                            Click="ApplyBalancedPreset"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="高质量模式"
+                            Click="ApplyHighQualityPreset"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="快速模式"
+                            Click="ApplyFastPreset"
+                            HorizontalAlignment="Stretch"/>
+                </StackPanel>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

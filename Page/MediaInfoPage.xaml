@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FFmpegWinUI.Page.MediaInfoPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    AllowDrop="True">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,16">
+            <TextBlock Text="媒体信息" Style="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="使用FFprobe查看媒体文件详细信息"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+
+        <!-- 信息显示区域 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <RichTextBlock x:Name="MediaInfoRichTextBlock"
+                           FontFamily="Consolas"
+                           Padding="12"
+                           TextWrapping="Wrap">
+                <Paragraph>
+                    <Run Text="拖放媒体文件到此处，或使用下方按钮选择文件..."/>
+                </Paragraph>
+            </RichTextBlock>
+        </ScrollViewer>
+
+        <!-- 控制按钮栏 -->
+        <CommandBar Grid.Row="2" DefaultLabelPosition="Right" Margin="0,8,0,0">
+            <AppBarButton Icon="OpenFile" Label="选择文件"/>
+            <AppBarSeparator/>
+            <AppBarButton Icon="Copy" Label="复制信息"/>
+            <AppBarButton Icon="Save" Label="导出到文件"/>
+        </CommandBar>
+    </Grid>
+</Page>

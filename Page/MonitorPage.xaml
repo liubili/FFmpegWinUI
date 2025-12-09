@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FFmpegWinUI.Page.MonitorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16">
+            <TextBlock Text="性能监控" Style="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="实时监控系统性能指标"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+            <!-- CPU监控 -->
+            <Grid Margin="0,16,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="CPU 使用率" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <ProgressBar Grid.Row="1" Value="0" Maximum="100" Height="24"/>
+            </Grid>
+
+            <!-- 内存监控 -->
+            <Grid Margin="0,8,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="内存使用率" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <ProgressBar Grid.Row="1" Value="0" Maximum="100" Height="24"/>
+            </Grid>
+
+            <!-- GPU监控 -->
+            <Grid Margin="0,8,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="GPU 使用率" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <ProgressBar Grid.Row="1" Value="0" Maximum="100" Height="24"/>
+            </Grid>
+
+            <!-- 说明 -->
+            <InfoBar Title="提示"
+                     Message="性能监控功能需要LibreHardwareMonitor库支持"
+                     Severity="Informational"
+                     IsOpen="True"
+                     Margin="0,16,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

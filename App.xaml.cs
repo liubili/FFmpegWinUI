@@ -36,8 +36,16 @@ namespace FFmpegWinUI
         /// </summary>
         public App()
         {
-            InitializeComponent();
-            UnhandledException += App_UnhandledException;
+            try
+            {
+                InitializeComponent();
+                UnhandledException += App_UnhandledException;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"App构造函数异常: {ex}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -46,15 +54,38 @@ namespace FFmpegWinUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            // 首先初始化服务
-            FfmpegService = new FfmpegService(AppContext.BaseDirectory);
+            try
+            {
+                // 首先初始化服务
+                FfmpegService = new FfmpegService(AppContext.BaseDirectory);
 
-            MainWindow = new MainWindow();
-            MainWindow.Activate();
+                MainWindow = new MainWindow();
+
+                // 初始化服务容器（在窗口创建后，因为需要 DispatcherQueue）
+                var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+                Services.ServiceContainer.Instance.Initialize(dispatcherQueue);
+
+                MainWindow.Activate();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"OnLaunched异常: {ex}");
+                System.Diagnostics.Debug.WriteLine($"异常消息: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"堆栈跟踪: {ex.StackTrace}");
+                throw;
+            }
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
+            // 输出详细的异常信息
+            System.Diagnostics.Debug.WriteLine($"未处理的异常: {e.Exception}");
+            System.Diagnostics.Debug.WriteLine($"异常消息: {e.Exception.Message}");
+            System.Diagnostics.Debug.WriteLine($"堆栈跟踪: {e.Exception.StackTrace}");
+            if (e.Exception.InnerException != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"内部异常: {e.Exception.InnerException}");
+            }
             e.Handled = true;
         }
     }

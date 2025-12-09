@@ -14,29 +14,74 @@
     </Window.SystemBackdrop>
 
     <Grid>
-        <NavigationView x:Name="nvSample">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 全局 InfoBar 区域 -->
+        <StackPanel Grid.Row="0" x:Name="InfoBarPanel" />
+
+        <!-- 主导航区域 -->
+        <NavigationView Grid.Row="1" x:Name="nvSample">
             <NavigationView.MenuItems>
-                <NavigationViewItem Icon="Home" Content="主页" Tag="Home" />
-                <NavigationViewItem Content="转换" Tag="Transcoder">
+                <!-- 起始页 -->
+                <NavigationViewItem Icon="Home" Content="3FUI" Tag="HomePage" />
+                <!-- 编码队列 -->
+                <NavigationViewItem Content="编码队列" Tag="QueuePage">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Switch" />
+                        <FontIcon Glyph="&#xE8FD;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="高级" Tag="Encoder">
+                <!-- 准备文件 -->
+                <NavigationViewItem Content="准备文件" Tag="FilesPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEA18;" />
+                        <FontIcon Glyph="&#xE8E5;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Icon="Download" Content="没想好" Tag="SamplePage4" />
-                
+                <!-- 参数面板 -->
+                <NavigationViewItem Content="参数面板" Tag="ParametersPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE115;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <!-- 媒体信息 -->
+                <NavigationViewItem Content="媒体信息" Tag="MediaInfoPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8B2;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <!-- 混流 -->
+                <NavigationViewItem Content="混流" Tag="MuxPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8B1;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <!-- 合并 -->
+                <NavigationViewItem Content="合并" Tag="ConcatPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE723;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <!-- 性能监控 -->
+                <NavigationViewItem Content="性能监控" Tag="MonitorPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9D9;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <!-- 插件扩展 -->
+                <NavigationViewItem Content="插件扩展" Tag="PluginsPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xECAA;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <!-- 软件设置 -->
+                <NavigationViewItem Content="软件设置" Tag="SettingsPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
-            <NavigationView.FooterMenuItems>
-                <NavigationViewItem Content="关于" Tag="Info">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE946;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.FooterMenuItems>
             <Frame x:Name="contentFrame"/>
         </NavigationView>
     </Grid>

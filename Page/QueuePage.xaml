@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FFmpegWinUI.Page.QueuePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:viewmodels="using:FFmpegWinUI.ViewModels"
+    xmlns:models="using:FFmpegWinUI.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=viewmodels:QueuePageViewModel}"
+    mc:Ignorable="d">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,16">
+            <TextBlock Text="编码队列" Style="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="管理和监控编码任务"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+
+        <!-- 任务列表 - 表格布局（8列）-->
+        <Grid Grid.Row="1">
+            <ListView x:Name="TaskListView"
+                      SelectionMode="Single"
+                      AllowDrop="True"
+                      ItemsSource="{x:Bind ViewModel.Tasks, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedTask, Mode=TwoWay}">
+
+                <!-- 表头 -->
+                <ListView.Header>
+                    <Grid Padding="12,8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/><!-- 文件名 -->
+                            <ColumnDefinition Width="1*"/><!-- 状态 -->
+                            <ColumnDefinition Width="1*"/><!-- 进度 -->
+                            <ColumnDefinition Width="1*"/><!-- 效率(FPS) -->
+                            <ColumnDefinition Width="1.5*"/><!-- 输出大小&预估 -->
+                            <ColumnDefinition Width="0.8*"/><!-- 质量 -->
+                            <ColumnDefinition Width="1*"/><!-- 比特率 -->
+                            <ColumnDefinition Width="1.5*"/><!-- 预计剩余&已用 -->
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="文件名" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="1" Text="状态" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="2" Text="进度" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="3" Text="效率" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="4" Text="输出大小" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="5" Text="质量" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="6" Text="比特率" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="7" Text="预计剩余" FontWeight="SemiBold"/>
+                    </Grid>
+                </ListView.Header>
+
+                <!-- 数据模板 -->
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:EncodingTask">
+                        <Grid Padding="12,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/><!-- 文件名 -->
+                                <ColumnDefinition Width="1*"/><!-- 状态 -->
+                                <ColumnDefinition Width="1*"/><!-- 进度 -->
+                                <ColumnDefinition Width="1*"/><!-- 效率(FPS) -->
+                                <ColumnDefinition Width="1.5*"/><!-- 输出大小&预估 -->
+                                <ColumnDefinition Width="0.8*"/><!-- 质量 -->
+                                <ColumnDefinition Width="1*"/><!-- 比特率 -->
+                                <ColumnDefinition Width="1.5*"/><!-- 预计剩余&已用 -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 文件名 -->
+                            <TextBlock Grid.Column="0"
+                                       Text="{x:Bind InputFile}"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTipService.ToolTip="{x:Bind InputFile}"/>
+
+                            <!-- 状态 -->
+                            <TextBlock Grid.Column="1" Text="{x:Bind Status, Mode=OneWay}"/>
+
+                            <!-- 进度 -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="{x:Bind ProgressPercentage, Mode=OneWay}"/>
+                                <TextBlock Text="%"/>
+                            </StackPanel>
+
+                            <!-- 效率(FPS) -->
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="{x:Bind CurrentFPS, Mode=OneWay}"/>
+                                <TextBlock Text="fps"/>
+                            </StackPanel>
+
+                            <!-- 输出大小 -->
+                            <TextBlock Grid.Column="4" Text="{x:Bind CurrentSize, Mode=OneWay}"/>
+
+                            <!-- 质量 -->
+                            <TextBlock Grid.Column="5" Text="{x:Bind CurrentQuality, Mode=OneWay}"/>
+
+                            <!-- 比特率 -->
+                            <TextBlock Grid.Column="6" Text="{x:Bind CurrentBitrate, Mode=OneWay}"/>
+
+                            <!-- 预计剩余 -->
+                            <TextBlock Grid.Column="7" Text="{x:Bind EstimatedTimeRemaining, Mode=OneWay}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+        <!-- 控制按钮栏（7个按钮）-->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,16,0,0">
+            <Button Content="开始任务"
+                    Command="{x:Bind ViewModel.StartTaskCommand}"
+                    Style="{StaticResource AccentButtonStyle}"/>
+            <Button Content="暂停任务"
+                    Command="{x:Bind ViewModel.PauseTaskCommand}"/>
+            <Button Content="恢复任务"
+                    Command="{x:Bind ViewModel.ResumeTaskCommand}"
+                    Style="{StaticResource AccentButtonStyle}"/>
+            <Button Content="停止任务"
+                    Command="{x:Bind ViewModel.StopTaskCommand}"/>
+            <Button Content="移除任务"
+                    Command="{x:Bind ViewModel.RemoveTaskCommand}"/>
+            <Button Content="重置任务"
+                    Command="{x:Bind ViewModel.ResetTaskCommand}"/>
+            <Button Content="定位输出"
+                    Command="{x:Bind ViewModel.LocateOutputCommand}"/>
+        </StackPanel>
+
+        <!-- 实时信息面板 -->
+        <Border Grid.Row="3"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="16"
+                Margin="0,16,0,0">
+            <Grid ColumnSpacing="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 状态 -->
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="状态" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{x:Bind ViewModel.CurrentTaskStatus, Mode=OneWay}" FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <!-- 进度 -->
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="进度" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.CurrentTaskProgress, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <TextBlock Text="%"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 效率 -->
+                <StackPanel Grid.Column="2" Spacing="4">
+                    <TextBlock Text="效率" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.CurrentTaskFPS, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <TextBlock Text="fps"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 输出大小 -->
+                <StackPanel Grid.Column="3" Spacing="4">
+                    <TextBlock Text="输出大小" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{x:Bind ViewModel.CurrentTaskSize, Mode=OneWay}" FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <!-- 质量 -->
+                <StackPanel Grid.Column="4" Spacing="4">
+                    <TextBlock Text="质量" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{x:Bind ViewModel.CurrentTaskQuality, Mode=OneWay}" FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <!-- 比特率 -->
+                <StackPanel Grid.Column="5" Spacing="4">
+                    <TextBlock Text="比特率" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{x:Bind ViewModel.CurrentTaskBitrate, Mode=OneWay}" FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <!-- 预计剩余 -->
+                <StackPanel Grid.Column="6" Spacing="4">
+                    <TextBlock Text="预计剩余" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{x:Bind ViewModel.CurrentTaskETA, Mode=OneWay}" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

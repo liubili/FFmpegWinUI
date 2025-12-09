@@ -1,66 +1,48 @@
 using FFmpegWinUI.Page;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Windows;
-//using System.Windows.Controls;
-// Removed the incorrect using directive for System.Windows.Controls
-// and replaced it with the correct namespace for WinUI controls.
-
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using System.Threading.Tasks;
 
 namespace FFmpegWinUI
 {
     /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// FFmpeg WinUI ä¸»çª—å£
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        // ÉùÃ÷ SettingsNavItem ×Ö¶ÎÓÃÓÚÒıÓÃ¡°ÉèÖÃ¡±µ¼º½Ïî
         private NavigationViewItem? SettingsNavItem;
 
         public MainWindow()
         {
             this.InitializeComponent();
 
-            // ³õÊ¼»¯ SettingsNavItem
+            // åˆå§‹åŒ– SettingsNavItem
             SettingsNavItem = FindSettingsNavItem();
 
-            // È·±£ÔÚÉèÖÃÊÂ¼ş´¦ÀíÆ÷Ö®Ç° NavigationView ÒÑ¾­³õÊ¼»¯
+            // ç¡®ä¿åœ¨æ·»åŠ äº‹ä»¶å¤„ç†ç¨‹åºä¹‹å‰ NavigationView å·²ç»åˆå§‹åŒ–
             if (nvSample != null)
             {
                 nvSample.SelectionChanged += NvSample_SelectionChanged;
-                // Ä¬ÈÏµ¼º½µ½Ö÷Ò³£¬µ«ÒªÈ·±£Ò³ÃæÀàĞÍ´æÔÚ
-                contentFrame.Navigate(typeof(Home));
+                // é»˜è®¤å¯¼èˆªåˆ°èµ·å§‹é¡µï¼ˆéœ€è¦ç¡®ä¿é¡µé¢ç±»å·²å­˜åœ¨ï¼‰
+                contentFrame.Navigate(typeof(HomePage));
             }
         }
 
-        // ²éÕÒ Tag="Settings" µÄ NavigationViewItem
+        // æŸ¥æ‰¾ Tag="SettingsPage" çš„ NavigationViewItem
         private NavigationViewItem? FindSettingsNavItem()
         {
-            // ¼ì²é FooterMenuItems
+            // æ£€æŸ¥ FooterMenuItems
             foreach (var obj in nvSample.FooterMenuItems)
             {
-                if (obj is NavigationViewItem item && (item.Tag?.ToString() == "Settings"))
+                if (obj is NavigationViewItem item && (item.Tag?.ToString() == "SettingsPage"))
                     return item;
             }
-            // ¼ì²é MenuItems£¨Èç¹ûÄã°ÑÉèÖÃ·ÅÔÚÖ÷²Ëµ¥£©
+            // æ£€æŸ¥ MenuItemsï¼ˆå¦‚æœè®¾ç½®æ”¾åœ¨äº†ä¸»èœå•ï¼‰
             foreach (var obj in nvSample.MenuItems)
             {
-                if (obj is NavigationViewItem item && (item.Tag?.ToString() == "Settings"))
+                if (obj is NavigationViewItem item && (item.Tag?.ToString() == "SettingsPage"))
                     return item;
             }
             return null;
@@ -75,25 +57,30 @@ namespace FFmpegWinUI
                     var pageTag = item.Tag?.ToString();
                     Type pageType = pageTag switch
                     {
-                        "Home" => typeof(Home),
-                        "Settings" => typeof(Settings),
-                        "Transcoder" => typeof(Transcoder), 
-                        "Info" => typeof(Info),
-                        
-                        _ => typeof(Home)  // Ä¬ÈÏµ¼º½µ½Ö÷Ò³
+                        "HomePage" => typeof(HomePage),
+                        "QueuePage" => typeof(QueuePage),
+                        "FilesPage" => typeof(FilesPage),
+                        "ParametersPage" => typeof(ParametersPage),
+                        "MediaInfoPage" => typeof(MediaInfoPage),
+                        "MuxPage" => typeof(MuxPage),
+                        "ConcatPage" => typeof(ConcatPage),
+                        "MonitorPage" => typeof(MonitorPage),
+                        "PluginsPage" => typeof(PluginsPage),
+                        "SettingsPage" => typeof(SettingsPage),
+                        _ => typeof(HomePage)  // é»˜è®¤å¯¼èˆªåˆ°èµ·å§‹é¡µ
                     };
 
-                    // È·±£ contentFrame ²»Îª¿Õ
+                    // ç¡®ä¿ contentFrame ä¸ä¸ºç©º
                     if (contentFrame != null)
                     {
-                        // Ê¹ÓÃ try-catch °ü×°µ¼º½²Ù×÷
+                        // ä½¿ç”¨ try-catch åŒ…è£…å¯¼èˆªæ“ä½œ
                         try
                         {
                             contentFrame.Navigate(pageType);
                         }
                         catch (Exception ex)
                         {
-                            // µ¼º½Ê§°ÜÊ±µÄ´¦Àí
+                            // å¯¼èˆªå¤±è´¥æ—¶çš„å¤„ç†
                             System.Diagnostics.Debug.WriteLine($"Navigation failed: {ex.Message}");
                         }
                     }
@@ -101,18 +88,119 @@ namespace FFmpegWinUI
             }
             catch (Exception ex)
             {
-                // ´¦ÀíÑ¡Ôñ¸ü¸ÄÊÂ¼şÖĞµÄÒì³£
+                // å¤„ç†é€‰æ‹©æ”¹å˜äº‹ä»¶ä¸­çš„å¼‚å¸¸
                 System.Diagnostics.Debug.WriteLine($"Selection changed error: {ex.Message}");
             }
         }
 
-        // Ìí¼ÓÒ»¸ö·½·¨ÓÃÓÚ¿ØÖÆ InfoBadge ÏÔÊ¾
+        // æä¾›ä¸€ä¸ªæ–¹æ³•ç”¨äºæ§åˆ¶ InfoBadge æ˜¾ç¤º
         public void SetSettingsInfoBadgeVisible(bool visible)
         {
-            if (SettingsNavItem != null && SettingsNavItem.InfoBadge is InfoBadge badge)    
+            if (SettingsNavItem != null && SettingsNavItem.InfoBadge is InfoBadge badge)
             {
                 badge.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
             }
+        }
+
+        /// <summary>
+        /// æä¾›ç»™å…¶ä»–é¡µé¢è°ƒç”¨çš„å¯¼èˆªæ–¹æ³•
+        /// </summary>
+        public void NavigateToPage(string pageTag)
+        {
+            try
+            {
+                Type pageType = pageTag switch
+                {
+                    "HomePage" => typeof(HomePage),
+                    "QueuePage" => typeof(QueuePage),
+                    "FilesPage" => typeof(FilesPage),
+                    "ParametersPage" => typeof(ParametersPage),
+                    "MediaInfoPage" => typeof(MediaInfoPage),
+                    "MuxPage" => typeof(MuxPage),
+                    "ConcatPage" => typeof(ConcatPage),
+                    "MonitorPage" => typeof(MonitorPage),
+                    "PluginsPage" => typeof(PluginsPage),
+                    "SettingsPage" => typeof(SettingsPage),
+                    _ => typeof(HomePage)
+                };
+
+                if (contentFrame != null)
+                {
+                    contentFrame.Navigate(pageType);
+
+                    // æ›´æ–° NavigationView çš„é€‰ä¸­é¡¹
+                    foreach (var item in nvSample.MenuItems)
+                    {
+                        if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == pageTag)
+                        {
+                            nvSample.SelectedItem = navItem;
+                            break;
+                        }
+                    }
+                    foreach (var item in nvSample.FooterMenuItems)
+                    {
+                        if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == pageTag)
+                        {
+                            nvSample.SelectedItem = navItem;
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Navigation failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// æ˜¾ç¤ºå…¨å±€ä¿¡æ¯æç¤ºæ¡
+        /// </summary>
+        public void ShowInfoBar(string title, string message, bool isError = false, int autoCloseDuration = 5000)
+        {
+            var infoBar = new InfoBar
+            {
+                Title = title,
+                Message = message,
+                Severity = isError ? InfoBarSeverity.Error : InfoBarSeverity.Success,
+                IsOpen = true,
+                IsClosable = true,
+                Margin = new Thickness(12, 8, 12, 0)
+            };
+
+            InfoBarPanel.Children.Add(infoBar);
+
+            // è‡ªåŠ¨å…³é—­å®šæ—¶å™¨
+            if (autoCloseDuration > 0)
+            {
+                var timer = new System.Threading.Timer(_ =>
+                {
+                    this.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        infoBar.IsOpen = false;
+                        // å»¶è¿Ÿä¸€ç‚¹å†ç§»é™¤ï¼Œè®©å…³é—­åŠ¨ç”»å®Œæˆ
+                        Task.Delay(300).ContinueWith(_ =>
+                        {
+                            this.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                InfoBarPanel.Children.Remove(infoBar);
+                            });
+                        });
+                    });
+                }, null, autoCloseDuration, System.Threading.Timeout.Infinite);
+            }
+
+            // InfoBar å…³é—­æŒ‰é’®ç‚¹å‡»åè‡ªåŠ¨ä»å®¹å™¨ä¸­ç§»é™¤
+            infoBar.CloseButtonClick += (s, e) =>
+            {
+                Task.Delay(300).ContinueWith(_ =>
+                {
+                    this.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        InfoBarPanel.Children.Remove(infoBar);
+                    });
+                });
+            };
         }
     }
 }

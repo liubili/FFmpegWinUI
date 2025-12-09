@@ -1,0 +1,269 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using FFmpegWinUI.Models;
+
+namespace FFmpegWinUI.Services
+{
+    /// <summary>
+    /// 预设服务接口
+    /// </summary>
+    public interface IPresetService
+    {
+        Task SavePresetAsync(PresetData preset, string filePath);
+        Task<PresetData?> LoadPresetAsync(string filePath);
+        Task<List<string>> GetPresetListAsync(string directory);
+        Task DeletePresetAsync(string filePath);
+        string GenerateCommandLine(PresetData preset, string inputFile, string outputFile);
+        string GetDefaultPresetDirectory();
+    }
+
+    /// <summary>
+    /// 预设服务 - 对应VB项目的预设管理.vb
+    /// 负责预设的保存、加载、管理和FFmpeg命令行生成
+    /// </summary>
+    public class PresetService : IPresetService
+    {
+        private readonly string _defaultPresetDirectory;
+        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never
+        };
+
+        public PresetService()
+        {
+            // 默认预设目录：应用数据目录下的Presets文件夹
+            var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+            _defaultPresetDirectory = Path.Combine(localFolder, "Presets");
+
+            // 确保预设目录存在
+            if (!Directory.Exists(_defaultPresetDirectory))
+            {
+                Directory.CreateDirectory(_defaultPresetDirectory);
+            }
+        }
+
+        /// <summary>
+        /// 保存预设到JSON文件
+        /// </summary>
+        public async Task SavePresetAsync(PresetData preset, string filePath)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(preset, _jsonOptions);
+                await File.WriteAllTextAsync(filePath, json);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"保存预设失败: {ex.Message}");
+                throw new Exception($"保存预设失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 从JSON文件加载预设
+        /// </summary>
+        public async Task<PresetData?> LoadPresetAsync(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                    return null;
+
+                var json = await File.ReadAllTextAsync(filePath);
+                return JsonSerializer.Deserialize<PresetData>(json, _jsonOptions);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载预设失败: {ex.Message}");
+                throw new Exception($"加载预设失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取指定目录下的所有预设文件列表
+        /// </summary>
+        public async Task<List<string>> GetPresetListAsync(string directory)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    var targetDir = string.IsNullOrEmpty(directory) ? _defaultPresetDirectory : directory;
+
+                    if (!Directory.Exists(targetDir))
+                        return new List<string>();
+
+                    return Directory.GetFiles(targetDir, "*.json")
+                        .Select(Path.GetFileNameWithoutExtension)
+                        .OrderBy(name => name)
+                        .ToList()!;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"获取预设列表失败: {ex.Message}");
+                    return new List<string>();
+                }
+            });
+        }
+
+        /// <summary>
+        /// 删除预设文件
+        /// </summary>
+        public async Task DeletePresetAsync(string filePath)
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"删除预设失败: {ex.Message}");
+                    throw new Exception($"删除预设失败: {ex.Message}", ex);
+                }
+            });
+        }
+
+        /// <summary>
+        /// 生成FFmpeg命令行
+        /// 这是一个简化版本，完整版本需要根据VB项目的命令行生成逻辑实现
+        /// </summary>
+        public string GenerateCommandLine(PresetData preset, string inputFile, string outputFile)
+        {
+            var args = new List<string>();
+
+            // 输入文件
+            args.Add($"-i \"{inputFile}\"");
+
+            // 解码参数
+            if (!string.IsNullOrEmpty(preset.解码参数_解码器))
+                args.Add($"-c:v {preset.解码参数_解码器}");
+
+            if (!string.IsNullOrEmpty(preset.解码参数_CPU解码线程数))
+                args.Add($"-threads {preset.解码参数_CPU解码线程数}");
+
+            // 视频编码器
+            if (!string.IsNullOrEmpty(preset.视频参数_编码器_具体编码))
+            {
+                args.Add($"-c:v {preset.视频参数_编码器_具体编码}");
+
+                // 编码预设
+                if (!string.IsNullOrEmpty(preset.视频参数_编码器_编码预设))
+                    args.Add($"-preset {preset.视频参数_编码器_编码预设}");
+
+                // 配置文件
+                if (!string.IsNullOrEmpty(preset.视频参数_编码器_配置文件))
+                    args.Add($"-profile:v {preset.视频参数_编码器_配置文件}");
+
+                // 场景优化
+                if (!string.IsNullOrEmpty(preset.视频参数_编码器_场景优化))
+                    args.Add($"-tune {preset.视频参数_编码器_场景优化}");
+            }
+
+            // 分辨率
+            if (!string.IsNullOrEmpty(preset.视频参数_分辨率))
+                args.Add($"-s {preset.视频参数_分辨率}");
+
+            // 帧率
+            if (!string.IsNullOrEmpty(preset.视频参数_帧速率))
+                args.Add($"-r {preset.视频参数_帧速率}");
+
+            // 质量控制
+            if (!string.IsNullOrEmpty(preset.视频参数_质量控制_参数名) &&
+                !string.IsNullOrEmpty(preset.视频参数_质量控制_值))
+            {
+                args.Add($"-{preset.视频参数_质量控制_参数名} {preset.视频参数_质量控制_值}");
+            }
+
+            // 比特率控制
+            if (!string.IsNullOrEmpty(preset.视频参数_比特率_基础))
+                args.Add($"-b:v {preset.视频参数_比特率_基础}");
+
+            if (!string.IsNullOrEmpty(preset.视频参数_比特率_最低值))
+                args.Add($"-minrate {preset.视频参数_比特率_最低值}");
+
+            if (!string.IsNullOrEmpty(preset.视频参数_比特率_最高值))
+                args.Add($"-maxrate {preset.视频参数_比特率_最高值}");
+
+            if (!string.IsNullOrEmpty(preset.视频参数_比特率_缓冲区))
+                args.Add($"-bufsize {preset.视频参数_比特率_缓冲区}");
+
+            // 像素格式
+            if (!string.IsNullOrEmpty(preset.视频参数_色彩管理_像素格式))
+                args.Add($"-pix_fmt {preset.视频参数_色彩管理_像素格式}");
+
+            // 音频编码器
+            if (!string.IsNullOrEmpty(preset.音频参数_编码器_具体编码))
+            {
+                args.Add($"-c:a {preset.音频参数_编码器_具体编码}");
+
+                // 音频比特率
+                if (!string.IsNullOrEmpty(preset.音频参数_比特率))
+                    args.Add($"-b:a {preset.音频参数_比特率}");
+
+                // 音频质量
+                if (!string.IsNullOrEmpty(preset.音频参数_质量参数名) &&
+                    !string.IsNullOrEmpty(preset.音频参数_质量值))
+                {
+                    args.Add($"-{preset.音频参数_质量参数名} {preset.音频参数_质量值}");
+                }
+
+                // 声道数
+                if (!string.IsNullOrEmpty(preset.音频参数_声道数))
+                    args.Add($"-ac {preset.音频参数_声道数}");
+
+                // 采样率
+                if (!string.IsNullOrEmpty(preset.音频参数_采样率))
+                    args.Add($"-ar {preset.音频参数_采样率}");
+            }
+
+            // 剪辑参数
+            if (!string.IsNullOrEmpty(preset.剪辑参数_视频开始时间))
+                args.Add($"-ss {preset.剪辑参数_视频开始时间}");
+
+            if (!string.IsNullOrEmpty(preset.剪辑参数_视频结束时间))
+                args.Add($"-to {preset.剪辑参数_视频结束时间}");
+
+            if (!string.IsNullOrEmpty(preset.剪辑参数_输出时长))
+                args.Add($"-t {preset.剪辑参数_输出时长}");
+
+            // 流控制
+            if (preset.流控制_丢弃视频)
+                args.Add("-vn");
+
+            if (preset.流控制_丢弃音频)
+                args.Add("-an");
+
+            if (preset.流控制_丢弃字幕)
+                args.Add("-sn");
+
+            // 自定义参数
+            if (!string.IsNullOrEmpty(preset.自定义参数_附加参数))
+                args.Add(preset.自定义参数_附加参数);
+
+            // 覆盖输出文件
+            if (preset.其他_覆盖输出文件)
+                args.Add("-y");
+
+            // 输出文件
+            args.Add($"\"{outputFile}\"");
+
+            return string.Join(" ", args);
+        }
+
+        /// <summary>
+        /// 获取默认预设目录
+        /// </summary>
+        public string GetDefaultPresetDirectory() => _defaultPresetDirectory;
+    }
+}

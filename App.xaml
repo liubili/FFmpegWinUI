@@ -3,14 +3,24 @@
     x:Class="FFmpegWinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:FFmpegWinUI">
+    xmlns:local="using:FFmpegWinUI"
+    xmlns:converters="using:FFmpegWinUI.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
+
+            <!-- Value Converters -->
+            <converters:TimeSpanToStringConverter x:Key="TimeSpanToStringConverter"/>
+            <converters:PercentageConverter x:Key="PercentageConverter"/>
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <converters:StatusToErrorConverter x:Key="StatusToErrorConverter"/>
+            <converters:StatusToPausedConverter x:Key="StatusToPausedConverter"/>
+            <converters:IntMinusOneConverter x:Key="IntMinusOneConverter"/>
+            <converters:ClipMethod3VisibilityConverter x:Key="ClipMethod3Visibility"/>
+            <converters:StringListConverter x:Key="StringListConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

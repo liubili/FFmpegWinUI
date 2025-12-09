@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="FFmpegWinUI.Page.UpscaleWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="超分辨率设置"
+    PrimaryButtonText="确定"
+    SecondaryButtonText="取消"
+    DefaultButton="Primary"
+    PrimaryButtonClick="OkButton_Click"
+    SecondaryButtonClick="CancelButton_Click">
+
+    <ScrollViewer MaxHeight="600" Padding="24">
+        <StackPanel Spacing="16">
+            <!-- 目标分辨率 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="目标分辨率" FontWeight="SemiBold"/>
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="宽度 (Width)" FontSize="12" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TargetWidthTextBox"
+                                 PlaceholderText="例如: 1920"
+                                 Text=""/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="1"
+                               Text="×"
+                               VerticalAlignment="Center"
+                               Margin="8,20,8,0"/>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="高度 (Height)" FontSize="12" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TargetHeightTextBox"
+                                 PlaceholderText="例如: 1080"
+                                 Text=""/>
+                    </StackPanel>
+                </Grid>
+                <TextBlock Text="提示: -1 表示自动保持宽高比"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+
+            <!-- 缩放算法 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="上采样算法 (Upsampling)" FontWeight="SemiBold"/>
+                <ComboBox x:Name="UpsampleAlgorithmComboBox"
+                          HorizontalAlignment="Stretch"
+                          SelectedIndex="0">
+                    <ComboBoxItem Content="Lanczos (高质量)" Tag="lanczos"/>
+                    <ComboBoxItem Content="Bicubic (平衡)" Tag="bicubic"/>
+                    <ComboBoxItem Content="Spline (平滑)" Tag="spline"/>
+                    <ComboBoxItem Content="Bilinear (快速)" Tag="bilinear"/>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- 说明信息 -->
+            <InfoBar Severity="Informational" IsOpen="True" IsClosable="False">
+                <InfoBar.Content>
+                    <TextBlock Text="超分辨率设置允许您将视频放大到更高的分辨率。使用高质量算法可以获得更好的视觉效果。"
+                               TextWrapping="Wrap"/>
+                </InfoBar.Content>
+            </InfoBar>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

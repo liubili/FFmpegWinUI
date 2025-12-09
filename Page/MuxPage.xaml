@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FFmpegWinUI.Page.MuxPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16">
+            <TextBlock Text="混流" Style="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="将音频流和视频流混合到一个文件"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+            <StackPanel Spacing="12" Margin="0,16,0,0">
+                <TextBlock Text="视频文件" FontWeight="SemiBold"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" PlaceholderText="选择视频文件..." IsReadOnly="True"/>
+                    <Button Grid.Column="1" Content="浏览..." Margin="8,0,0,0"/>
+                </Grid>
+
+                <TextBlock Text="音频文件" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" PlaceholderText="选择音频文件..." IsReadOnly="True"/>
+                    <Button Grid.Column="1" Content="浏览..." Margin="8,0,0,0"/>
+                </Grid>
+
+                <TextBlock Text="输出文件" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" PlaceholderText="输出文件路径..."/>
+                    <Button Grid.Column="1" Content="浏览..." Margin="8,0,0,0"/>
+                </Grid>
+
+                <Button Content="开始混流" Style="{StaticResource AccentButtonStyle}" Margin="0,16,0,0"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

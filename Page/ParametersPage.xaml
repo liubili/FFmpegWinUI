@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FFmpegWinUI.Page.ParametersPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:viewmodels="using:FFmpegWinUI.ViewModels"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=viewmodels:ParametersPageViewModel}"
+    mc:Ignorable="d">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,16">
+            <TextBlock Text="参数面板" Style="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="配置编码参数和预设"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+
+        <!-- 参数标签页（14个标签，匹配FreeUI结构）-->
+        <TabView Grid.Row="1" x:Name="ParameterTabView" TabWidthMode="SizeToContent">
+            <TabView.TabItems>
+                <!-- Tab 1: 参数总览 -->
+                <TabViewItem Header="参数总览">
+                    <ScrollViewer Padding="16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Spacing="8" Margin="0,0,8,0">
+                                <TextBlock Text="参数总览" FontWeight="SemiBold" FontSize="14"/>
+                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        CornerRadius="4" Padding="12" MinHeight="400">
+                                    <TextBlock Text="当前配置的参数预览将在此显示"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Spacing="8" Margin="8,0,0,0">
+                                <TextBlock Text="实际命令行" FontWeight="SemiBold" FontSize="14"/>
+                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        CornerRadius="4" Padding="12" MinHeight="400">
+                                    <ScrollViewer>
+                                        <TextBlock Text="{x:Bind ViewModel.CommandLinePreview, Mode=OneWay}"
+                                                   TextWrapping="Wrap"
+                                                   FontFamily="Consolas"
+                                                   IsTextSelectionEnabled="True"/>
+                                    </ScrollViewer>
+                                </Border>
+                                <Button Content="复制命令行"
+                                        Command="{x:Bind ViewModel.CopyCommandLineCommand}"
+                                        HorizontalAlignment="Right"/>
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 2: 输出文件设置 -->
+                <TabViewItem Header="输出文件设置">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <CheckBox Content="不使用输出文件参数"/>
+
+                            <TextBlock Text="输出容器" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.OutputContainer, Mode=TwoWay}">
+                                <x:String>mp4</x:String>
+                                <x:String>mkv</x:String>
+                                <x:String>avi</x:String>
+                                <x:String>mov</x:String>
+                                <x:String>webm</x:String>
+                                <x:String>flv</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="输出目录" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" PlaceholderText="留空则使用源文件目录"/>
+                                <Button Grid.Column="1" Content="浏览..."/>
+                            </Grid>
+
+                            <CheckBox Content="使用自动命名" Margin="0,16,0,0"/>
+                            <TextBox Header="文件名前缀" PlaceholderText="可选"/>
+                            <TextBox Header="文件名后缀" PlaceholderText="可选"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 3: 解码设置 -->
+                <TabViewItem Header="解码设置">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="解码器" FontWeight="SemiBold"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.DecoderName, Mode=TwoWay}"
+                                     PlaceholderText="留空使用FFmpeg自动选择"/>
+
+                            <TextBlock Text="CPU解码线程数" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.DecoderThreads, Mode=TwoWay}"
+                                      IsEditable="True">
+                                <x:String></x:String>
+                                <x:String>auto</x:String>
+                                <x:String>1</x:String>
+                                <x:String>2</x:String>
+                                <x:String>4</x:String>
+                                <x:String>8</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="解码数据格式" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.DecoderFormat, Mode=TwoWay}"
+                                     PlaceholderText="例如: yuv420p"/>
+
+                            <TextBlock Text="硬件加速解码参数名" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.HardwareAccelName, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>cuda</x:String>
+                                <x:String>d3d11va</x:String>
+                                <x:String>dxva2</x:String>
+                                <x:String>qsv</x:String>
+                                <x:String>vulkan</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="硬件加速解码参数" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.HardwareAccelParams, Mode=TwoWay}"
+                                     PlaceholderText="例如: 0 (指定GPU)"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 4: 视频参数编码器 -->
+                <TabViewItem Header="视频参数编码器">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="编码类别" FontWeight="SemiBold"/>
+                            <ComboBox MinWidth="200">
+                                <x:String>H.264</x:String>
+                                <x:String>H.265 (HEVC)</x:String>
+                                <x:String>AV1</x:String>
+                                <x:String>VP9</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="具体编码" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      ItemsSource="{x:Bind ViewModel.EncoderList, Mode=OneWay}"
+                                      SelectedItem="{x:Bind ViewModel.SelectedEncoder, Mode=TwoWay}"
+                                      PlaceholderText="选择编码器..."/>
+
+                            <TextBlock Text="编码预设" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      ItemsSource="{x:Bind ViewModel.EncoderPresetList, Mode=OneWay}"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.VideoEncoderPreset, Mode=TwoWay}"
+                                      PlaceholderText="选择预设..."/>
+
+                            <TextBlock Text="配置文件 (Profile)" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      ItemsSource="{x:Bind ViewModel.ProfileList, Mode=OneWay}"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.VideoEncoderProfile, Mode=TwoWay}"
+                                      PlaceholderText="选择配置..."/>
+
+                            <TextBlock Text="场景优化 (Tune)" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      ItemsSource="{x:Bind ViewModel.TuneList, Mode=OneWay}"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.VideoEncoderTune, Mode=TwoWay}"
+                                      PlaceholderText="选择优化..."/>
+
+                            <TextBlock Text="线程数 (threads)" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.VideoEncoderThreads, Mode=TwoWay}"
+                                      IsEditable="True">
+                                <x:String></x:String>
+                                <x:String>auto</x:String>
+                                <x:String>1</x:String>
+                                <x:String>2</x:String>
+                                <x:String>4</x:String>
+                                <x:String>6</x:String>
+                                <x:String>8</x:String>
+                                <x:String>12</x:String>
+                                <x:String>16</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="GPU选择" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.VideoEncoderGPU, Mode=TwoWay}"
+                                     PlaceholderText="例如: 0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 5: 视频参数画面帧 -->
+                <TabViewItem Header="视频参数画面帧">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="分辨率" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBox Text="{x:Bind ViewModel.CurrentPreset.VideoResolutionWidth, Mode=TwoWay}"
+                                         PlaceholderText="宽度" Width="120"/>
+                                <TextBlock Text="×" VerticalAlignment="Center"/>
+                                <TextBox Text="{x:Bind ViewModel.CurrentPreset.VideoResolutionHeight, Mode=TwoWay}"
+                                         PlaceholderText="高度" Width="120"/>
+                            </StackPanel>
+
+                            <TextBlock Text="画面裁剪滤镜参数" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <TextBox PlaceholderText="例如: crop=1920:1080:0:0"/>
+                            <Button Content="裁剪交互窗口" Click="OpenCropWindow"/>
+
+                            <TextBlock Text="帧速率 (FPS)" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.VideoFrameRate, Mode=TwoWay}"
+                                      IsEditable="True">
+                                <x:String></x:String>
+                                <x:String>23.976</x:String>
+                                <x:String>24</x:String>
+                                <x:String>25</x:String>
+                                <x:String>29.97</x:String>
+                                <x:String>30</x:String>
+                                <x:String>50</x:String>
+                                <x:String>59.94</x:String>
+                                <x:String>60</x:String>
+                                <x:String>120</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="高级处理" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <Button Content="打开插帧参数窗口" Click="OpenInterpolationWindow" HorizontalAlignment="Stretch"/>
+                            <Button Content="打开动态模糊参数窗口" Click="OpenBlendWindow" HorizontalAlignment="Stretch"/>
+                            <Button Content="打开超分参数窗口" Click="OpenUpscaleWindow" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 6: 视频参数质量 -->
+                <TabViewItem Header="视频参数质量">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="全局质量控制方式" FontWeight="SemiBold"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.BitrateControlMode, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>CBR</x:String>
+                                <x:String>VBR</x:String>
+                                <x:String>CRF</x:String>
+                                <x:String>CQP</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="全局质量控制参数" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.QualityControlParamName, Mode=TwoWay}"
+                                      IsEditable="True">
+                                <x:String></x:String>
+                                <x:String>crf</x:String>
+                                <x:String>qp</x:String>
+                                <x:String>q:v</x:String>
+                                <x:String>cq</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="全局质量控制值" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.QualityControlValue, Mode=TwoWay}"
+                                     PlaceholderText="CRF推荐: 18-28"/>
+
+                            <TextBlock Text="基础比特率 (kbps)" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.VideoBitrate, Mode=TwoWay}"
+                                      IsEditable="True">
+                                <x:String></x:String>
+                                <x:String>1000</x:String>
+                                <x:String>2000</x:String>
+                                <x:String>4000</x:String>
+                                <x:String>6000</x:String>
+                                <x:String>8000</x:String>
+                                <x:String>10000</x:String>
+                                <x:String>15000</x:String>
+                                <x:String>20000</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="最低比特率 (kbps)" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.VideoMinBitrate, Mode=TwoWay}"
+                                     PlaceholderText="留空使用默认"/>
+
+                            <TextBlock Text="最高比特率 (kbps)" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.VideoMaxBitrate, Mode=TwoWay}"
+                                     PlaceholderText="留空使用默认"/>
+
+                            <TextBlock Text="比特率缓冲区 (kbps)" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.VideoBufferSize, Mode=TwoWay}"
+                                     PlaceholderText="通常为最大比特率的2倍"/>
+
+                            <TextBlock Text="进阶质量控制" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <StackPanel Spacing="8">
+                                <Button Content="添加进阶质量控制预制项"/>
+                                <Button Content="添加进阶质量控制空项"/>
+                                <Button Content="清除全部进阶质量控制"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 7: 视频参数色彩管理 -->
+                <TabViewItem Header="视频参数色彩管理">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="像素格式" FontWeight="SemiBold"/>
+                            <ComboBox MinWidth="200"
+                                      ItemsSource="{x:Bind ViewModel.PixelFormatList, Mode=OneWay}"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.PixelFormat, Mode=TwoWay}"
+                                      PlaceholderText="选择像素格式..."/>
+
+                            <TextBlock Text="矩阵系数" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.ColorMatrix, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>bt709</x:String>
+                                <x:String>bt470bg</x:String>
+                                <x:String>bt601</x:String>
+                                <x:String>smpte170m</x:String>
+                                <x:String>bt2020nc</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="色域" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.ColorPrimaries, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>bt709</x:String>
+                                <x:String>bt470bg</x:String>
+                                <x:String>smpte170m</x:String>
+                                <x:String>bt2020</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="传输特性" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.ColorTransfer, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>bt709</x:String>
+                                <x:String>smpte170m</x:String>
+                                <x:String>linear</x:String>
+                                <x:String>smpte2084</x:String>
+                                <x:String>arib-std-b67</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="色彩范围" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.ColorRange, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>tv</x:String>
+                                <x:String>pc</x:String>
+                                <x:String>limited</x:String>
+                                <x:String>full</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="色调映射算法" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.TonemapAlgorithm, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>hable</x:String>
+                                <x:String>mobius</x:String>
+                                <x:String>reinhard</x:String>
+                                <x:String>bt2390</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="简易调色" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBox Grid.Row="0" Grid.Column="0" Header="亮度"
+                                         Text="{x:Bind ViewModel.CurrentPreset.Brightness, Mode=TwoWay}"
+                                         PlaceholderText="-1.0 到 1.0"/>
+                                <TextBox Grid.Row="0" Grid.Column="1" Header="对比度"
+                                         Text="{x:Bind ViewModel.CurrentPreset.Contrast, Mode=TwoWay}"
+                                         PlaceholderText="-1.0 到 1.0"/>
+                                <TextBox Grid.Row="1" Grid.Column="0" Header="饱和度"
+                                         Text="{x:Bind ViewModel.CurrentPreset.Saturation, Mode=TwoWay}"
+                                         PlaceholderText="-1.0 到 1.0"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" Header="伽马"
+                                         Text="{x:Bind ViewModel.CurrentPreset.Gamma, Mode=TwoWay}"
+                                         PlaceholderText="0.1 到 10.0"/>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 8: 视频参数常见滤镜 -->
+                <TabViewItem Header="视频参数常见滤镜">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="降噪方式" FontWeight="SemiBold"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.DenoiseFilter, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>hqdn3d</x:String>
+                                <x:String>nlmeans</x:String>
+                                <x:String>removegrain</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="降噪参数" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Header="参数1" PlaceholderText="4"/>
+                                <TextBox Grid.Column="1" Header="参数2" PlaceholderText="3"/>
+                                <TextBox Grid.Column="2" Header="参数3" PlaceholderText="6"/>
+                                <TextBox Grid.Column="3" Header="参数4" PlaceholderText="4.5"/>
+                            </Grid>
+
+                            <TextBlock Text="锐化" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Header="水平尺寸"
+                                         Text="{x:Bind ViewModel.CurrentPreset.SharpenLumaWidth, Mode=TwoWay}"
+                                         PlaceholderText="5"/>
+                                <TextBox Grid.Column="1" Header="垂直尺寸"
+                                         Text="{x:Bind ViewModel.CurrentPreset.SharpenLumaHeight, Mode=TwoWay}"
+                                         PlaceholderText="5"/>
+                                <TextBox Grid.Column="2" Header="强度"
+                                         Text="{x:Bind ViewModel.CurrentPreset.SharpenStrength, Mode=TwoWay}"
+                                         PlaceholderText="1.0"/>
+                            </Grid>
+
+                            <TextBlock Text="逐行与隔行处理方式" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.DeinterlaceMode, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>yadif</x:String>
+                                <x:String>bwdif</x:String>
+                                <x:String>w3fdif</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="角度翻转" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <ComboBox MinWidth="200">
+                                <x:String>不旋转</x:String>
+                                <x:String>顺时针90°</x:String>
+                                <x:String>180°</x:String>
+                                <x:String>逆时针90° (270°)</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="镜像翻转" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedIndex="{x:Bind ViewModel.CurrentPreset.FlipMirrorMode, Mode=TwoWay}">
+                                <ComboBoxItem Content="不翻转"/>
+                                <ComboBoxItem Content="水平镜像"/>
+                                <ComboBoxItem Content="垂直镜像"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 9: 音频参数 -->
+                <TabViewItem Header="音频参数">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="音频编码器" FontWeight="SemiBold"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.AudioEncoder, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>copy</x:String>
+                                <x:String>-an</x:String>
+                                <x:String>aac</x:String>
+                                <x:String>libmp3lame</x:String>
+                                <x:String>libopus</x:String>
+                                <x:String>flac</x:String>
+                                <x:String>ac3</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="音频比特率 (kbps)" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.AudioBitrate, Mode=TwoWay}"
+                                      IsEditable="True">
+                                <x:String></x:String>
+                                <x:String>64k</x:String>
+                                <x:String>96k</x:String>
+                                <x:String>128k</x:String>
+                                <x:String>160k</x:String>
+                                <x:String>192k</x:String>
+                                <x:String>256k</x:String>
+                                <x:String>320k</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="音频质量参数名" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.AudioQualityParamName, Mode=TwoWay}"
+                                      IsEditable="True">
+                                <x:String></x:String>
+                                <x:String>-q:a</x:String>
+                                <x:String>-compression_level</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="音频质量值" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.AudioQualityValue, Mode=TwoWay}"
+                                     PlaceholderText="例如: 2"/>
+
+                            <TextBlock Text="声道布局" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.AudioChannelLayout, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>mono</x:String>
+                                <x:String>stereo</x:String>
+                                <x:String>5.1</x:String>
+                                <x:String>7.1</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="采样率 (Hz)" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200"
+                                      SelectedItem="{x:Bind ViewModel.CurrentPreset.AudioSampleRate, Mode=TwoWay}">
+                                <x:String></x:String>
+                                <x:String>48000</x:String>
+                                <x:String>44100</x:String>
+                                <x:String>32000</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="响度标准化" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Header="目标响度 (LUFS)" PlaceholderText="-16"/>
+                                <TextBox Grid.Column="1" Header="动态范围" PlaceholderText="7"/>
+                                <TextBox Grid.Column="2" Header="峰值电平" PlaceholderText="-1.5"/>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 10: 图片参数 -->
+                <TabViewItem Header="图片参数">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="图片编码器" FontWeight="SemiBold"/>
+                            <ComboBox MinWidth="200">
+                                <x:String></x:String>
+                                <x:String>png</x:String>
+                                <x:String>mjpeg</x:String>
+                                <x:String>webp</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="图片编码器质量" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox PlaceholderText="2-31 (值越小质量越高)"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 11: 自定义参数 -->
+                <TabViewItem Header="自定义参数">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="自定义视频/音频滤镜" FontWeight="SemiBold" FontSize="14"/>
+                            <TextBox Header="自定义视频滤镜" Text="{x:Bind ViewModel.CurrentPreset.VideoFilter, Mode=TwoWay}"
+                                     PlaceholderText="FFmpeg滤镜命令..." TextWrapping="Wrap" AcceptsReturn="True" MinHeight="80"/>
+                            <TextBox Header="自定义音频滤镜" Text="{x:Bind ViewModel.CurrentPreset.AudioFilter, Mode=TwoWay}"
+                                     PlaceholderText="FFmpeg音频滤镜..." TextWrapping="Wrap" AcceptsReturn="True" MinHeight="80"/>
+                            <TextBox Header="复杂滤镜 (filter_complex)" Text="{x:Bind ViewModel.CurrentPreset.ComplexFilter, Mode=TwoWay}"
+                                     PlaceholderText="用于多输入滤镜图..." TextWrapping="Wrap" AcceptsReturn="True" MinHeight="80"/>
+
+                            <TextBlock Text="自定义视频/音频参数" FontWeight="SemiBold" FontSize="14" Margin="0,16,0,0"/>
+                            <TextBox Header="自定义视频参数" AcceptsReturn="True" MinHeight="60"
+                                     PlaceholderText="例如: -x264-params ref=4:bframes=3"/>
+                            <TextBox Header="自定义音频参数" AcceptsReturn="True" MinHeight="60"
+                                     PlaceholderText="例如: -compression_level 10"/>
+
+                            <TextBlock Text="前/后/最后参数" FontWeight="SemiBold" FontSize="14" Margin="0,16,0,0"/>
+                            <TextBox Header="开头参数" AcceptsReturn="True" MinHeight="60"
+                                     PlaceholderText="在所有参数之前插入"/>
+                            <TextBox Header="结尾参数" AcceptsReturn="True" MinHeight="60"
+                                     PlaceholderText="在输出文件之前插入"/>
+                            <TextBox Header="最后参数" AcceptsReturn="True" MinHeight="60"
+                                     PlaceholderText="在所有参数之后插入"/>
+
+                            <TextBlock Text="完全自定义参数写入" FontWeight="SemiBold" FontSize="14" Margin="0,16,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.AdditionalParams, Mode=TwoWay}"
+                                     AcceptsReturn="True" MinHeight="100"
+                                     PlaceholderText="⚠️ 启用后将覆盖所有自动生成的参数"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 12: 剪辑区间 -->
+                <TabViewItem Header="剪辑区间">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="剪辑方法" FontWeight="SemiBold"/>
+                            <ComboBox MinWidth="300">
+                                <ComboBoxItem Content="粗剪（快速但不精确）"/>
+                                <ComboBoxItem Content="精剪标准（精确但慢）"/>
+                                <ComboBoxItem Content="精剪快速响应（推荐）"/>
+                            </ComboBox>
+
+                            <TextBlock Text="快速剪辑入点" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.ClipStartTime, Mode=TwoWay}"
+                                     PlaceholderText="格式: 00:00:00 或秒数"/>
+
+                            <TextBlock Text="快速剪辑出点" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.ClipEndTime, Mode=TwoWay}"
+                                     PlaceholderText="格式: 00:00:00 或秒数"/>
+
+                            <TextBlock Text="剪辑向前解码多久(秒)" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrentPreset.PreDecodeSeconds, Mode=TwoWay}"
+                                     PlaceholderText="例如: 3"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 13: 流控制 -->
+                <TabViewItem Header="流控制">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="将视频参数用于这些流" FontWeight="SemiBold"/>
+                            <TextBox PlaceholderText="例如: 0,1,2"/>
+                            <CheckBox Content="保留其他视频流"
+                                      IsChecked="{x:Bind ViewModel.CurrentPreset.EnableKeepOtherVideoStreams, Mode=TwoWay}"/>
+
+                            <TextBlock Text="将音频参数用于这些流" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <TextBox PlaceholderText="例如: 0"/>
+                            <CheckBox Content="保留其他音频流"/>
+
+                            <TextBlock Text="使用哪些文件的哪些内嵌字幕" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <TextBox PlaceholderText="例如: 0:s:0"/>
+
+                            <TextBlock Text="自动混流字幕" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <StackPanel Spacing="8">
+                                <CheckBox Content="自动混流 ASS" IsChecked="{x:Bind ViewModel.CurrentPreset.AutoMuxASS, Mode=TwoWay}"/>
+                                <CheckBox Content="自动混流 SSA" IsChecked="{x:Bind ViewModel.CurrentPreset.AutoMuxSSA, Mode=TwoWay}"/>
+                                <CheckBox Content="自动混流 SRT" IsChecked="{x:Bind ViewModel.CurrentPreset.AutoMuxSRT, Mode=TwoWay}"/>
+                                <CheckBox Content="自动混流字幕转为 movtext"
+                                          IsChecked="{x:Bind ViewModel.CurrentPreset.ConvertSubtitleToMovText, Mode=TwoWay}"/>
+                            </StackPanel>
+
+                            <TextBlock Text="元数据选项" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <ComboBox MinWidth="200">
+                                <x:String>保留</x:String>
+                                <x:String>移除</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="章节选项" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200">
+                                <x:String>保留</x:String>
+                                <x:String>移除</x:String>
+                            </ComboBox>
+
+                            <TextBlock Text="附件选项" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <ComboBox MinWidth="200">
+                                <x:String>保留</x:String>
+                                <x:String>移除</x:String>
+                            </ComboBox>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabViewItem>
+
+                <!-- Tab 14: 方案管理 -->
+                <TabViewItem Header="方案管理">
+                    <ScrollViewer Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 预设操作区 -->
+                            <StackPanel Grid.Row="0" Spacing="8">
+                                <TextBlock Text="预设列表" FontWeight="SemiBold" FontSize="14"/>
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox Grid.Column="0"
+                                              PlaceholderText="选择预设..."
+                                              ItemsSource="{x:Bind ViewModel.PresetList, Mode=OneWay}"
+                                              SelectedItem="{x:Bind ViewModel.SelectedPresetName, Mode=TwoWay}"/>
+                                    <Button Grid.Column="1" Content="刷新预设列表"/>
+                                </Grid>
+
+                                <TextBlock Text="自动加载预设选项" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                                <TextBox PlaceholderText="留空则不自动加载"/>
+                            </StackPanel>
+
+                            <!-- 预设预览区 -->
+                            <Border Grid.Row="1" Margin="0,16,0,16"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="12">
+                                <TextBlock Text="预设预览将在此显示"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            </Border>
+
+                            <!-- 操作按钮 -->
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+                                <Button Content="保存预设" Command="{x:Bind ViewModel.SavePresetCommand}"
+                                        Style="{StaticResource AccentButtonStyle}"/>
+                                <Button Content="读取预设" Command="{x:Bind ViewModel.LoadPresetCommand}"/>
+                                <Button Content="导出预设"/>
+                                <Button Content="导入预设"/>
+                                <Button Content="重置参数面板" Command="{x:Bind ViewModel.ResetParametersCommand}"/>
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </TabViewItem>
+            </TabView.TabItems>
+        </TabView>
+    </Grid>
+</Page>
