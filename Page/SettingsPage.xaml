@@ -4,15 +4,20 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:viewmodels="using:FFmpegWinUI.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=viewmodels:SettingsPageViewModel}"
     mc:Ignorable="d">
 
     <ScrollViewer>
         <StackPanel Padding="24" Spacing="24">
             <!-- 标题 -->
-            <TextBlock Text="软件设置"
-                       Style="{StaticResource TitleTextBlockStyle}"/>
+            <StackPanel Spacing="8">
+                <TextBlock Text="软件设置" Style="{StaticResource TitleTextBlockStyle}"/>
+                <TextBlock Text="配置FFmpeg路径、应用行为和外观"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
 
             <!-- FFmpeg配置区域 -->
             <Expander Header="FFmpeg 配置" IsExpanded="True">

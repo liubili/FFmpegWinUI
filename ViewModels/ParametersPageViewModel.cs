@@ -70,6 +70,9 @@ namespace FFmpegWinUI.ViewModels
             _presetService = presetService;
             _dispatcherQueue = dispatcherQueue;
 
+            // 初始化默认预设
+            InitializeDefaultPreset();
+
             // 初始化编码器列表
             InitializeEncoderDatabase();
 
@@ -107,6 +110,16 @@ namespace FFmpegWinUI.ViewModels
                     UpdateCommandLinePreview();
                 };
             }
+        }
+
+        /// <summary>
+        /// 初始化默认预设
+        /// </summary>
+        private void InitializeDefaultPreset()
+        {
+            // 创建空的预设对象，不预填充任何默认值
+            // 用户需要手动配置所有参数
+            CurrentPreset = new PresetData();
         }
 
         /// <summary>

@@ -25,6 +25,9 @@ namespace FFmpegWinUI.Services
         public FilesPageViewModel FilesPageViewModel { get; private set; } = null!;
         public ParametersPageViewModel ParametersPageViewModel { get; private set; } = null!;
         public QueuePageViewModel QueuePageViewModel { get; private set; } = null!;
+        public MediaInfoPageViewModel MediaInfoPageViewModel { get; private set; } = null!;
+        public HomePageViewModel HomePageViewModel { get; private set; } = null!;
+        public SettingsPageViewModel SettingsPageViewModel { get; private set; } = null!;
 
         private ServiceContainer()
         {
@@ -40,8 +43,8 @@ namespace FFmpegWinUI.Services
             PresetService = new PresetService();
             MediaInfoService = new MediaInfoService();
 
-            // 获取 ffmpeg 路径
-            var ffmpegPath = Path.Combine(AppContext.BaseDirectory, "ffmpeg.exe");
+            // 获取 ffmpeg 路径 - 默认从系统 PATH 查找
+            var ffmpegPath = "ffmpeg";
             EncodingTaskService = new EncodingTaskService(PresetService, ffmpegPath);
 
             // 2. 创建共享的 ViewModel 实例
@@ -49,6 +52,9 @@ namespace FFmpegWinUI.Services
             FilesPageViewModel = new FilesPageViewModel(MediaInfoService, dispatcherQueue);
             ParametersPageViewModel = new ParametersPageViewModel(PresetService, dispatcherQueue);
             QueuePageViewModel = new QueuePageViewModel(EncodingTaskService, dispatcherQueue);
+            MediaInfoPageViewModel = new MediaInfoPageViewModel(MediaInfoService, dispatcherQueue);
+            SettingsPageViewModel = new SettingsPageViewModel(dispatcherQueue);
+            HomePageViewModel = new HomePageViewModel(FilesPageViewModel, QueuePageViewModel);
         }
 
         /// <summary>

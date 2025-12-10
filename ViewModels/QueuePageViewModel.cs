@@ -113,16 +113,19 @@ namespace FFmpegWinUI.ViewModels
         {
             try
             {
-                // 刷新所有正在处理的任务的计算属性
+                // 刷新所有正在处理的任务的计算属性和进度显示
                 var processingTasks = Tasks.Where(t => t.Status == EncodingStatus.Processing).ToList();
                 foreach (var task in processingTasks)
                 {
-                    // 触发计算属性更新
-                    task.RefreshCalculatedProperties();
+                    // 触发所有绑定属性的更新（在UI线程）
+                    task.RefreshProgressDisplay();
                 }
 
                 // 更新实时信息面板
                 UpdateCurrentTaskInfo();
+
+                // 更新统计信息
+                UpdateStatistics();
             }
             catch (Exception ex)
             {
@@ -337,8 +340,15 @@ namespace FFmpegWinUI.ViewModels
         /// </summary>
         private void OnTaskStatusChanged(object? sender, EncodingTask task)
         {
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] OnTaskStatusChanged收到事件 - 任务状态: {task.Status}");
+
             _dispatcherQueue.TryEnqueue(() =>
             {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] OnTaskStatusChanged在UI线程执行 - 手动刷新状态");
+
+                // 手动刷新任务状态显示
+                task.RefreshProgressDisplay();
+
                 UpdateStatistics();
                 UpdateButtonStates();
 

@@ -168,4 +168,121 @@ namespace FFmpegWinUI.Converters
             return new List<string>();
         }
     }
+
+    /// <summary>
+    /// 文件路径转文件名转换器
+    /// </summary>
+    public class PathToFileNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is string path && !string.IsNullOrEmpty(path))
+            {
+                return System.IO.Path.GetFileName(path);
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// 编码状态转显示文本转换器
+    /// </summary>
+    public class EncodingStatusConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is EncodingStatus status)
+            {
+                return status switch
+                {
+                    EncodingStatus.Pending => "未处理",
+                    EncodingStatus.Processing => "正在处理",
+                    EncodingStatus.Paused => "已暂停",
+                    EncodingStatus.Completed => "已完成",
+                    EncodingStatus.Stopped => "已停止",
+                    EncodingStatus.Error => "错误",
+                    _ => "未知"
+                };
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// 布尔值转可见性转换器
+    /// </summary>
+    public class BooleanToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool b)
+            {
+                return b ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            if (value is Visibility v)
+            {
+                return v == Visibility.Visible;
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 反转布尔值转可见性转换器
+    /// </summary>
+    public class InverseBooleanToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool b)
+            {
+                return b ? Visibility.Collapsed : Visibility.Visible;
+            }
+            return Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            if (value is Visibility v)
+            {
+                return v != Visibility.Visible;
+            }
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// 空字符串转默认值转换器
+    /// </summary>
+    public class EmptyStringToDefaultConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is string str && string.IsNullOrWhiteSpace(str))
+            {
+                return parameter as string ?? "--";
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

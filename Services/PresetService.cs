@@ -354,17 +354,51 @@ namespace FFmpegWinUI.Services
             // 比特率控制
             if (!string.IsNullOrEmpty(preset.VideoBitrate))
             {
-                args.Add($"-b:v {preset.VideoBitrate}k");
+                var videoBitrate = preset.VideoBitrate;
+                if (!videoBitrate.EndsWith("k", StringComparison.OrdinalIgnoreCase) &&
+                    !videoBitrate.EndsWith("M", StringComparison.OrdinalIgnoreCase) &&
+                    !videoBitrate.EndsWith("G", StringComparison.OrdinalIgnoreCase))
+                {
+                    videoBitrate += "k";
+                }
+                args.Add($"-b:v {videoBitrate}");
             }
 
             if (!string.IsNullOrEmpty(preset.VideoMinBitrate))
-                args.Add($"-minrate {preset.VideoMinBitrate}k");
+            {
+                var minBitrate = preset.VideoMinBitrate;
+                if (!minBitrate.EndsWith("k", StringComparison.OrdinalIgnoreCase) &&
+                    !minBitrate.EndsWith("M", StringComparison.OrdinalIgnoreCase) &&
+                    !minBitrate.EndsWith("G", StringComparison.OrdinalIgnoreCase))
+                {
+                    minBitrate += "k";
+                }
+                args.Add($"-minrate {minBitrate}");
+            }
 
             if (!string.IsNullOrEmpty(preset.VideoMaxBitrate))
-                args.Add($"-maxrate {preset.VideoMaxBitrate}k");
+            {
+                var maxBitrate = preset.VideoMaxBitrate;
+                if (!maxBitrate.EndsWith("k", StringComparison.OrdinalIgnoreCase) &&
+                    !maxBitrate.EndsWith("M", StringComparison.OrdinalIgnoreCase) &&
+                    !maxBitrate.EndsWith("G", StringComparison.OrdinalIgnoreCase))
+                {
+                    maxBitrate += "k";
+                }
+                args.Add($"-maxrate {maxBitrate}");
+            }
 
             if (!string.IsNullOrEmpty(preset.VideoBufferSize))
-                args.Add($"-bufsize {preset.VideoBufferSize}k");
+            {
+                var bufSize = preset.VideoBufferSize;
+                if (!bufSize.EndsWith("k", StringComparison.OrdinalIgnoreCase) &&
+                    !bufSize.EndsWith("M", StringComparison.OrdinalIgnoreCase) &&
+                    !bufSize.EndsWith("G", StringComparison.OrdinalIgnoreCase))
+                {
+                    bufSize += "k";
+                }
+                args.Add($"-bufsize {bufSize}");
+            }
 
             // 高级质量控制参数
             if (preset.AdvancedQualityParams != null && preset.AdvancedQualityParams.Count > 0)
@@ -619,7 +653,17 @@ namespace FFmpegWinUI.Services
 
                 // 音频比特率
                 if (!string.IsNullOrEmpty(preset.AudioBitrate))
-                    args.Add($"-b:a {preset.AudioBitrate}k");
+                {
+                    var audioBitrate = preset.AudioBitrate;
+                    // 如果已经包含单位后缀（k/K/M/G），则不再添加'k'
+                    if (!audioBitrate.EndsWith("k", StringComparison.OrdinalIgnoreCase) &&
+                        !audioBitrate.EndsWith("M", StringComparison.OrdinalIgnoreCase) &&
+                        !audioBitrate.EndsWith("G", StringComparison.OrdinalIgnoreCase))
+                    {
+                        audioBitrate += "k";
+                    }
+                    args.Add($"-b:a {audioBitrate}");
+                }
 
                 // 音频质量
                 if (!string.IsNullOrEmpty(preset.AudioQualityParamName) &&

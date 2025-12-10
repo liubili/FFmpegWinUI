@@ -4,10 +4,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:FFmpegWinUI.Page"
+    xmlns:viewmodels="using:FFmpegWinUI.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=viewmodels:MediaInfoPageViewModel}"
     mc:Ignorable="d"
-    AllowDrop="True">
+    AllowDrop="True"
+    DragOver="Page_DragOver"
+    Drop="Page_Drop">
 
     <Grid Padding="24">
         <Grid.RowDefinitions>
@@ -24,23 +28,34 @@
         </StackPanel>
 
         <!-- 信息显示区域 -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <RichTextBlock x:Name="MediaInfoRichTextBlock"
+        <Border Grid.Row="1"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock Text="{x:Bind ViewModel.MediaInfoText, Mode=OneWay}"
                            FontFamily="Consolas"
-                           Padding="12"
-                           TextWrapping="Wrap">
-                <Paragraph>
-                    <Run Text="拖放媒体文件到此处，或使用下方按钮选择文件..."/>
-                </Paragraph>
-            </RichTextBlock>
-        </ScrollViewer>
+                           TextWrapping="Wrap"
+                           IsTextSelectionEnabled="True"/>
+            </ScrollViewer>
+        </Border>
 
         <!-- 控制按钮栏 -->
         <CommandBar Grid.Row="2" DefaultLabelPosition="Right" Margin="0,8,0,0">
-            <AppBarButton Icon="OpenFile" Label="选择文件"/>
+            <AppBarButton Icon="OpenFile" Label="选择文件"
+                          Command="{x:Bind ViewModel.SelectFileCommand}"/>
             <AppBarSeparator/>
-            <AppBarButton Icon="Copy" Label="复制信息"/>
-            <AppBarButton Icon="Save" Label="导出到文件"/>
+            <AppBarButton Icon="Copy" Label="复制信息"
+                          Command="{x:Bind ViewModel.CopyInfoCommand}"/>
+            <AppBarButton Icon="Save" Label="导出到文件"
+                          Command="{x:Bind ViewModel.ExportToFileCommand}"/>
         </CommandBar>
+
+        <!-- 加载指示器 -->
+        <ProgressRing Grid.Row="1"
+                      IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                      Width="50" Height="50"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"/>
     </Grid>
 </Page>

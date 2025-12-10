@@ -74,19 +74,27 @@ namespace FFmpegWinUI.Services
         /// </summary>
         public async Task StartTaskAsync(EncodingTask task)
         {
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] StartTaskAsync开始 - 任务: {task.InputFile}");
+
             await Task.Run(() =>
             {
                 try
                 {
-                    task.Status = EncodingStatus.Processing;
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Task.Run内部开始执行");
+
+                    task.SetStatus(EncodingStatus.Processing);
                     task.StartTime = DateTime.Now;
                     task.ClearProgress();
+
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] 状态已设置为Processing");
 
                     // 检查输入文件
                     if (!File.Exists(task.InputFile))
                     {
                         throw new FileNotFoundException($"输入文件不存在: {task.InputFile}");
                     }
+
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] 输入文件检查通过: {task.InputFile}");
 
                     // 获取输入文件大小
                     task.InputFileSize = new FileInfo(task.InputFile).Length;
@@ -107,6 +115,8 @@ namespace FFmpegWinUI.Services
                     // 生成FFmpeg命令行
                     task.CommandLine = _presetService.GenerateCommandLine(task.PresetData, task.InputFile, task.OutputFile);
 
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] 命令行生成: {task.CommandLine}");
+
                     // 创建FFmpeg进程
                     var psi = new ProcessStartInfo
                     {
@@ -122,6 +132,8 @@ namespace FFmpegWinUI.Services
                         StandardInputEncoding = Encoding.UTF8
                     };
 
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ProcessStartInfo创建完成");
+
                     task.FFmpegProcess = new Process { StartInfo = psi };
                     task.FFmpegProcess.EnableRaisingEvents = true;
 
@@ -130,19 +142,49 @@ namespace FFmpegWinUI.Services
                     task.FFmpegProcess.ErrorDataReceived += (s, e) => OnFfmpegOutputReceived(task, e);
                     task.FFmpegProcess.Exited += (s, e) => OnFfmpegProcessExited(task);
 
-                    // 启动进程
-                    task.FFmpegProcess.Start();
-                    task.FFmpegProcess.BeginOutputReadLine();
-                    task.FFmpegProcess.BeginErrorReadLine();
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] 事件绑定完成，准备启动进程");
 
-                    // 触发状态变化事件
-                    TaskStatusChanged?.Invoke(this, task);
+                    // 启动进程
+                    try
+                    {
+                        task.FFmpegProcess.Start();
+                        task.FFmpegProcess.BeginOutputReadLine();
+                        task.FFmpegProcess.BeginErrorReadLine();
+
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] FFmpeg进程启动成功，PID: {task.FFmpegProcess.Id}");
+
+                        // 触发状态变化事件
+                        TaskStatusChanged?.Invoke(this, task);
+
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] TaskStatusChanged事件已触发");
+                    }
+                    catch (System.ComponentModel.Win32Exception winEx)
+                    {
+                        // FFmpeg进程启动失败
+                        var errorMsg = $"FFmpeg进程启动失败 (错误代码: {winEx.NativeErrorCode})\n";
+                        errorMsg += $"详细信息: {winEx.Message}\n";
+                        errorMsg += $"FFmpeg路径: {_ffmpegPath}\n";
+                        errorMsg += $"完整命令: {_ffmpegPath} {task.CommandLine}\n";
+                        errorMsg += "\n可能原因:\n";
+                        errorMsg += "1. FFmpeg未安装或不在系统PATH环境变量中\n";
+                        errorMsg += "2. FFmpeg路径配置错误\n";
+                        errorMsg += "3. 缺少必要的运行时依赖\n";
+                        errorMsg += "\n解决方法:\n";
+                        errorMsg += "1. 下载FFmpeg: https://www.gyan.dev/ffmpeg/builds/\n";
+                        errorMsg += "2. 将ffmpeg.exe所在目录添加到系统PATH环境变量\n";
+                        errorMsg += "3. 或将ffmpeg.exe放置在程序同级目录";
+
+                        task.SetStatus(EncodingStatus.Error);
+                        task.ErrorMessages.Add(errorMsg);
+                        task.AppendLog($"[错误] {errorMsg}");
+                        TaskStatusChanged?.Invoke(this, task);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    task.Status = EncodingStatus.Error;
+                    task.SetStatus(EncodingStatus.Error);
                     task.ErrorMessages.Add(ex.Message);
-                    task.OutputLog += $"[错误] {ex.Message}\n";
+                    task.AppendLog($"[错误] {ex.Message}");
                     TaskStatusChanged?.Invoke(this, task);
                 }
             });
@@ -158,13 +200,13 @@ namespace FFmpegWinUI.Services
                 if (task.Status == EncodingStatus.Processing && task.FFmpegProcess != null && !task.FFmpegProcess.HasExited)
                 {
                     NtSuspendProcess(task.FFmpegProcess.Handle);
-                    task.Status = EncodingStatus.Paused;
+                    task.SetStatus(EncodingStatus.Paused);
                     TaskStatusChanged?.Invoke(this, task);
                 }
             }
             catch (Exception ex)
             {
-                task.OutputLog += $"[错误] 暂停任务失败: {ex.Message}\n";
+                task.AppendLog($"[错误] 暂停任务失败: {ex.Message}");
             }
         }
 
@@ -178,13 +220,13 @@ namespace FFmpegWinUI.Services
                 if (task.Status == EncodingStatus.Paused && task.FFmpegProcess != null && !task.FFmpegProcess.HasExited)
                 {
                     NtResumeProcess(task.FFmpegProcess.Handle);
-                    task.Status = EncodingStatus.Processing;
+                    task.SetStatus(EncodingStatus.Processing);
                     TaskStatusChanged?.Invoke(this, task);
                 }
             }
             catch (Exception ex)
             {
-                task.OutputLog += $"[错误] 恢复任务失败: {ex.Message}\n";
+                task.AppendLog($"[错误] 恢复任务失败: {ex.Message}");
             }
         }
 
@@ -198,14 +240,14 @@ namespace FFmpegWinUI.Services
                 if (task.FFmpegProcess != null && !task.FFmpegProcess.HasExited)
                 {
                     task.FFmpegProcess.Kill();
-                    task.Status = EncodingStatus.Stopped;
+                    task.SetStatus(EncodingStatus.Stopped);
                     task.EndTime = DateTime.Now;
                     TaskStatusChanged?.Invoke(this, task);
                 }
             }
             catch (Exception ex)
             {
-                task.OutputLog += $"[错误] 停止任务失败: {ex.Message}\n";
+                task.AppendLog($"[错误] 停止任务失败: {ex.Message}");
             }
         }
 
@@ -239,12 +281,8 @@ namespace FFmpegWinUI.Services
             if (string.IsNullOrEmpty(e.Data))
                 return;
 
-            // 添加到输出日志
-            task.OutputLog += e.Data + "\n";
-            if (task.OutputLog.Length > 50000)
-            {
-                task.OutputLog = task.OutputLog.Substring(task.OutputLog.Length - 25000);
-            }
+            // 添加到输出日志（不触发属性通知）
+            task.AppendLog(e.Data);
 
             // 触发输出事件
             TaskOutputReceived?.Invoke(this, e.Data);
@@ -269,16 +307,16 @@ namespace FFmpegWinUI.Services
                 }
             }
 
-            // 解析进度信息
+            // 解析进度信息（不触发属性通知，由定时器统一更新UI）
             if (e.Data.Contains("frame=") && e.Data.Contains("time="))
             {
                 ParseProgress(task, e.Data);
-                TaskProgressUpdated?.Invoke(this, task);
+                // 不在这里触发事件，让定时器统一更新
             }
         }
 
         /// <summary>
-        /// 解析FFmpeg进度输出
+        /// 解析FFmpeg进度输出（不触发UI更新）
         /// </summary>
         private void ParseProgress(EncodingTask task, string output)
         {
@@ -287,34 +325,29 @@ namespace FFmpegWinUI.Services
                 var match = ProgressPattern.Match(output);
                 if (match.Success)
                 {
-                    task.CurrentFrame = match.Groups[1].Value;
-                    task.CurrentFPS = match.Groups[2].Value;
-                    task.CurrentQuality = match.Groups[3].Value;
-
-                    // 解析size（带单位）
-                    var sizeValue = long.Parse(match.Groups[4].Value);
-                    var sizeUnit = match.Groups[5].Value;
-                    task.CurrentSizeBytes = ConvertToKB(sizeValue, sizeUnit);
-                    task.CurrentSize = FormatSize(task.CurrentSizeBytes);
-
-                    // 解析time
-                    var hours = int.Parse(match.Groups[6].Value);
-                    var minutes = int.Parse(match.Groups[7].Value);
-                    var seconds = double.Parse(match.Groups[8].Value);
-                    task.CurrentTime = new TimeSpan(hours, minutes, 0).Add(TimeSpan.FromSeconds(seconds));
-
-                    // 解析bitrate和speed（speed支持科学计数法）
-                    task.CurrentBitrate = match.Groups[9].Value + " kbits/s";
-                    task.CurrentSpeed = match.Groups[10].Value + "x";
+                    task.SetProgressData(
+                        frame: match.Groups[1].Value,
+                        fps: match.Groups[2].Value,
+                        quality: match.Groups[3].Value,
+                        sizeValue: long.Parse(match.Groups[4].Value),
+                        sizeUnit: match.Groups[5].Value,
+                        hours: int.Parse(match.Groups[6].Value),
+                        minutes: int.Parse(match.Groups[7].Value),
+                        seconds: double.Parse(match.Groups[8].Value),
+                        bitrate: match.Groups[9].Value + " kbits/s",
+                        speed: match.Groups[10].Value + "x"
+                    );
                 }
                 else
                 {
                     // 简化版解析（备用方案）
                     var frameMatch = Regex.Match(output, @"frame=\s*(\d+)");
-                    if (frameMatch.Success) task.CurrentFrame = frameMatch.Groups[1].Value;
+                    if (frameMatch.Success)
+                        task.SetFrame(frameMatch.Groups[1].Value);
 
                     var fpsMatch = Regex.Match(output, @"fps=\s*([\d.]+)");
-                    if (fpsMatch.Success) task.CurrentFPS = fpsMatch.Groups[1].Value;
+                    if (fpsMatch.Success)
+                        task.SetFPS(fpsMatch.Groups[1].Value);
 
                     var timeMatch = Regex.Match(output, @"time=(\d{2}):(\d{2}):(\d{2}\.\d{2})");
                     if (timeMatch.Success)
@@ -322,25 +355,25 @@ namespace FFmpegWinUI.Services
                         var h = int.Parse(timeMatch.Groups[1].Value);
                         var m = int.Parse(timeMatch.Groups[2].Value);
                         var s = double.Parse(timeMatch.Groups[3].Value);
-                        task.CurrentTime = new TimeSpan(h, m, 0).Add(TimeSpan.FromSeconds(s));
+                        task.SetCurrentTime(new TimeSpan(h, m, 0).Add(TimeSpan.FromSeconds(s)));
                     }
 
-                    // 支持KiB/MiB/GiB单位的备用正则
                     var sizeMatch = Regex.Match(output, @"size=\s*(\d+)([KMG]i?B)");
                     if (sizeMatch.Success)
                     {
                         var sizeValue = long.Parse(sizeMatch.Groups[1].Value);
                         var sizeUnit = sizeMatch.Groups[2].Value;
-                        task.CurrentSizeBytes = ConvertToKB(sizeValue, sizeUnit);
-                        task.CurrentSize = FormatSize(task.CurrentSizeBytes);
+                        var sizeKB = ConvertToKB(sizeValue, sizeUnit);
+                        task.SetSize(FormatSize(sizeKB), sizeKB);
                     }
 
                     var bitrateMatch = Regex.Match(output, @"bitrate=\s*([\d.]+)kbits/s");
-                    if (bitrateMatch.Success) task.CurrentBitrate = bitrateMatch.Groups[1].Value + " kbits/s";
+                    if (bitrateMatch.Success)
+                        task.SetBitrate(bitrateMatch.Groups[1].Value + " kbits/s");
 
-                    // 支持科学计数法的备用正则
                     var speedMatch = Regex.Match(output, @"speed=\s*([\d\.eE\+\-]+)x");
-                    if (speedMatch.Success) task.CurrentSpeed = speedMatch.Groups[1].Value + "x";
+                    if (speedMatch.Success)
+                        task.SetSpeed(speedMatch.Groups[1].Value + "x");
                 }
             }
             catch (Exception ex)
@@ -358,7 +391,7 @@ namespace FFmpegWinUI.Services
 
             if (task.FFmpegProcess?.ExitCode == 0)
             {
-                task.Status = EncodingStatus.Completed;
+                task.SetStatus(EncodingStatus.Completed);
 
                 // 保留文件时间戳
                 try
@@ -382,7 +415,7 @@ namespace FFmpegWinUI.Services
             }
             else
             {
-                task.Status = EncodingStatus.Error;
+                task.SetStatus(EncodingStatus.Error);
 
                 // 删除失败的输出文件
                 try
